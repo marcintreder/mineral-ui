@@ -5,7 +5,7 @@ import { createThemedComponent, mapComponentThemes } from '../themes';
 import TableCell, {
   componentTheme as tableCellComponentTheme
 } from './TableCell';
-import { TableContext } from './Table';
+import { TableContext } from './TableBase';
 
 type Props = {
   /** Rendered content */
@@ -32,15 +32,15 @@ export const componentTheme = (baseTheme: Object) =>
       theme: tableCellComponentTheme(baseTheme)
     },
     {
-      name: 'TableColumnHeader',
+      name: 'TableHeaderCell',
       theme: {
-        TableColumnHeader_borderVertical: `1px dotted ${baseTheme.borderColor}`,
-        TableColumnHeader_borderVertical_highContrast: `1px dotted ${baseTheme.color_gray_80}`,
-        TableColumnHeader_fontWeight: baseTheme.fontWeight_bold,
-        TableColumnHeader_paddingHorizontal: baseTheme.space_inline_md,
-        TableColumnHeader_paddingVertical: pxToEm(12),
-        TableColumnHeader_paddingVertical_spacious: baseTheme.space_stack_md,
-        TableColumnHeader_verticalAlign: 'bottom'
+        TableHeaderCell_borderVertical: `1px dotted ${baseTheme.borderColor}`,
+        TableHeaderCell_borderVertical_highContrast: `1px dotted ${baseTheme.color_gray_80}`,
+        TableHeaderCell_fontWeight: baseTheme.fontWeight_bold,
+        TableHeaderCell_paddingHorizontal: baseTheme.space_inline_md,
+        TableHeaderCell_paddingVertical: pxToEm(12),
+        TableHeaderCell_paddingVertical_spacious: baseTheme.space_stack_md,
+        TableHeaderCell_verticalAlign: 'bottom'
       }
     },
     baseTheme
@@ -51,7 +51,7 @@ export const ThemedTD = createThemedComponent(
   ({ theme: baseTheme }) =>
     mapComponentThemes(
       {
-        name: 'TableColumnHeader',
+        name: 'TableHeaderCell',
         theme: componentTheme(baseTheme)
       },
       {
@@ -74,14 +74,14 @@ const styles = ({
   width
 }) => {
   const theme = componentTheme(baseTheme);
-  const fontSize = theme.TableColumnHeader_fontSize;
+  const fontSize = theme.TableHeaderCell_fontSize;
   const rtl = theme.direction === 'rtl';
   const borderVertical = highContrast
-    ? theme.TableColumnHeader_borderVertical_highContrast
-    : theme.TableColumnHeader_borderVertical;
+    ? theme.TableHeaderCell_borderVertical_highContrast
+    : theme.TableHeaderCell_borderVertical;
 
   return {
-    fontWeight: theme.TableColumnHeader_fontWeight,
+    fontWeight: theme.TableHeaderCell_fontWeight,
     maxWidth: getWidth(maxWidth, fontSize),
     minWidth: getWidth(minWidth, fontSize),
     width: getWidth(width, fontSize),
@@ -93,14 +93,14 @@ const styles = ({
   };
 };
 
-// TableColumnHeader's root node must be created outside of render, so that the entire DOM
+// TableHeaderCell's root node must be created outside of render, so that the entire DOM
 // element is replaced only when the element prop is changed, otherwise it is
 // updated in place
 function createRootNode(props: Props) {
-  const { element = TableColumnHeader.defaultProps.element } = props;
+  const { element = TableHeaderCell.defaultProps.element } = props;
 
   return createStyledComponent(ThemedTD, styles, {
-    displayName: 'TableColumnHeader',
+    displayName: 'TableHeaderCell',
     filterProps: ['width'],
     forwardProps: ['element', 'noPadding', 'textAlign'],
     rootEl: element,
@@ -109,9 +109,9 @@ function createRootNode(props: Props) {
 }
 
 /**
- * TableColumnHeader
+ * TableHeaderCell
  */
-export default class TableColumnHeader extends PureComponent<Props> {
+export default class TableHeaderCell extends PureComponent<Props> {
   static defaultProps = {
     element: 'th',
     textAlign: 'start'
@@ -132,11 +132,11 @@ export default class TableColumnHeader extends PureComponent<Props> {
 
     return (
       <TableContext.Consumer>
-        {({ highContrast, density }) => {
+        {({ density, highContrast }) => {
           const rootProps = {
             'aria-label': label,
-            highContrast,
             density,
+            highContrast,
             ...restProps
           };
           return <Root {...rootProps}>{children}</Root>;
