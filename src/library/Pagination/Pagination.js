@@ -1,10 +1,20 @@
 /* @flow */
 import React, { Component } from 'react';
 import { createStyledComponent } from '../styles';
+import { createThemedComponent } from '../themes';
+import Button from '../Button';
 
 type Props = {
   /** TODO */
-  currentPage: number
+  'aria-label': string,
+  /** TODO */
+  currentPage?: number,
+  /** TODO */
+  rowsPerPage?: number,
+  /** TODO */
+  visibleRange?: number,
+  /** TODO */
+  totalPages: number
 };
 
 type State = {
@@ -19,16 +29,22 @@ export const componentTheme = (baseTheme: Object) => ({
 
 const styles = ({ theme: baseTheme }) => {
   let theme = componentTheme(baseTheme);
-  // const { direction } = theme;
-  // const rtl = direction === 'rtl';
 
   return {
-    // display: 'flex'
+    '& button': {
+      '&:not(:last-child)': {
+        marginRight: theme.space_inline_sm
+      }
+    }
   };
 };
 
-const Root = createStyledComponent('div', styles, {
+const Root = createStyledComponent('nav', styles, {
   includeStyleReset: true
+});
+
+const PageButton = createThemedComponent(Button, {
+  Button_paddingHorizontal: 0
 });
 
 /**
@@ -37,19 +53,24 @@ const Root = createStyledComponent('div', styles, {
 export default class Pagination extends Component<Props, State> {
   static displayName = 'Pagination';
   static defaultProps = {
-    currentPage: 0
+    currentPage: 0,
+    rowsPerPage: 10,
+    visibleRange: 5
   };
 
   state = {
-    currentPage: this.props.currentPage
+    currentPage: this.props.currentPage || Pagination.defaultProps.currentPage
   };
 
   render() {
-    const { ...restProps } = this.props;
+    const { totalPages, ...restProps } = this.props;
     const rootProps = {
       ...restProps
     };
+    const pages = Array.apply(null, Array(totalPages))
+      .map(Number.prototype.valueOf, 0)
+      .map((_, index) => <PageButton key={index}>{index + 1}</PageButton>);
 
-    return <Root {...rootProps} />;
+    return <Root {...rootProps}>{pages}</Root>;
   }
 }
