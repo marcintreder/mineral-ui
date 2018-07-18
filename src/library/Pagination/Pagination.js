@@ -12,7 +12,7 @@ type Props = {
   /** TODO */
   currentPage?: number,
   /** TODO */
-  rowsPerPage?: number,
+  pageSize?: number,
   /** TODO */
   visibleRange?: number,
   /** TODO */
@@ -47,14 +47,32 @@ const styles = {
   icon: {}
 };
 
-// const findStartIcon = (rtl) => (rtl ? IconChevronRight : IconChevronLeft);
-// const findEndIcon = (rtl) => (rtl ? IconChevronLeft : IconChevronRight);
-const previousButton = (
-  <Button aria-label="Chevron-left" iconStart={<IconChevronLeft />} minimal />
-);
-const nextButton = (
-  <Button aria-label="Chevron-left" iconStart={<IconChevronRight />} minimal />
-);
+const firstPage = (current) => current === 0;
+const lastPage = (current, total) => current === total - 1;
+
+const incrementButton = (
+  currentPage,
+  direction,
+  handleIncrement,
+  totalPages
+) => {
+  const incrementForward = direction === 'next' ? true : false;
+  const incrementIcon =
+    direction === 'next' ? <IconChevronRight /> : <IconChevronLeft />;
+  const disabled =
+    direction === 'next'
+      ? lastPage(currentPage, totalPages)
+      : firstPage(currentPage);
+  return (
+    <Button
+      aria-label={`${direction}-pointing chevron`}
+      disabled={disabled}
+      iconStart={incrementIcon}
+      minimal
+      onClick={handleIncrement.bind(null, incrementForward)}
+    />
+  );
+};
 
 const Root = createStyledComponent('nav', styles.root, {
   includeStyleReset: true
@@ -64,14 +82,57 @@ const PageButton = createThemedComponent(Button, {
   Button_paddingHorizontal: 0
 });
 
-const pages = (totalPages) =>
-  Array.apply(null, Array(totalPages))
+// const createPageRange = () => {
+//
+// }
+
+const pages = (currentPage, handleClick, { totalPages, visibleRange }) => {
+  // const displayPages = totalPages > visibleRange ? [totalPages[currentPage]] : totalPages
+  const pagesBufferMiddle = Math.ceil(visibleRange / 2);
+  const pagesBuffer =
+    currentPage === 0 || currentPage === totalPages - 1
+      ? pagesBufferMiddle + 1
+      : pagesBufferMiddle;
+  return Array.apply(null, Array(totalPages))
     .map(Number.prototype.valueOf, 0)
-    .map((_, index) => (
-      <PageButton minimal key={index}>
-        {index + 1}
-      </PageButton>
-    ));
+    .map((_, index) => {
+      let primary = false;
+      if (currentPage === index) {
+        primary = true;
+      }
+      const firstPageInRange =
+        index === currentPage - pagesBuffer && !firstPage(index);
+      const lastPageInRange =
+        index === currentPage + pagesBuffer && !lastPage(index, totalPages);
+      const isPageOutOfRange =
+        index < currentPage - pagesBuffer || index > currentPage + pagesBuffer;
+
+      let pageView = null;
+      if (firstPageInRange || lastPageInRange) {
+        pageView = (
+          <Button element="span" key={index} minimal>
+            ...
+          </Button>
+        );
+      } else if (
+        !isPageOutOfRange ||
+        firstPage(index) ||
+        lastPage(index, totalPages)
+      ) {
+        pageView = (
+          <PageButton
+            minimal
+            primary={primary}
+            key={index}
+            onClick={handleClick.bind(null, index)}>
+            {index + 1}
+          </PageButton>
+        );
+      }
+      return pageView;
+    })
+    .filter((page) => !!page);
+};
 
 /**
  * TODO
@@ -80,8 +141,8 @@ export default class Pagination extends Component<Props, State> {
   static displayName = 'Pagination';
   static defaultProps = {
     currentPage: 0,
-    rowsPerPage: 10,
-    visibleRange: 5
+    pageSize: 10,
+    visibleRange: 3
   };
 
   state = {
@@ -96,10 +157,35 @@ export default class Pagination extends Component<Props, State> {
 
     return (
       <Root {...rootProps}>
-        {previousButton}
-        {pages(totalPages)}
-        {nextButton}
+        {incrementButton(
+          this.state.currentPage,
+          'previous',
+          this.handleIncrement,
+          totalPages
+        )}
+        {pages(this.state.currentPage, this.handleClick, this.props)}
+        {incrementButton(
+          this.state.currentPage,
+          'next',
+          this.handleIncrement,
+          totalPages
+        )}
       </Root>
     );
   }
+
+  handleClick = (index) => {
+    this.setState({ currentPage: index });
+  };
+  handleIncrement = (incrementForward) => {
+    if (incrementForward) {
+      this.setState((prevState) => ({
+        currentPage: prevState.currentPage + 1
+      }));
+    } else {
+      this.setState((prevState) => ({
+        currentPage: prevState.currentPage - 1
+      }));
+    }
+  };
 }
