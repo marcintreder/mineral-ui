@@ -2,11 +2,11 @@
 import Pagination from '../../../../../library/Pagination';
 
 export default {
-  id: 'basic',
-  title: 'Basic',
+  id: 'default-page',
+  title: 'Default Page',
   description: `TODO`,
   scope: { Pagination },
   source: `
-    <Pagination totalPages={10} />
+    <Pagination defaultPage={5} totalPages={10} />
   `
 };

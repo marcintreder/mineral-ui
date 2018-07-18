@@ -6,6 +6,7 @@ import examples from '../../../website/app/demos/Pagination/examples';
 import testDemoExamples from '../../../../utils/testDemoExamples';
 
 const defaultProps = {
+  totalPages: 10,
   onChange: jest.fn(),
   onClick: jest.fn()
 };

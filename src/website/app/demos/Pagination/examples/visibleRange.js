@@ -2,11 +2,11 @@
 import Pagination from '../../../../../library/Pagination';
 
 export default {
-  id: 'basic',
-  title: 'Basic',
+  id: 'visible-range',
+  title: 'Visible Range',
   description: `TODO`,
   scope: { Pagination },
   source: `
-    <Pagination totalPages={10} />
+    <Pagination visibleRange={5} totalPages={10}/>
   `
 };

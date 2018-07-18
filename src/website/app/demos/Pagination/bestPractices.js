@@ -6,6 +6,6 @@ export default [
   {
     type: 'do',
     description: `TODO`,
-    example: <Pagination aria-label="Pagination" totalPages={4} />
+    example: <Pagination totalPages={4} />
   }
 ];

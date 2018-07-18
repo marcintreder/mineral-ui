@@ -2,11 +2,11 @@
 import Pagination from '../../../../../library/Pagination';
 
 export default {
-  id: 'basic',
-  title: 'Basic',
+  id: 'page-jumper',
+  title: 'Page Jumper',
   description: `TODO`,
   scope: { Pagination },
   source: `
-    <Pagination totalPages={10} />
+    <Pagination pageJumper totalPages={30} />
   `
 };

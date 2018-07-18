@@ -1,18 +1,24 @@
 /* @flow */
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { IconChevronRight } from 'mineral-ui-icons';
 import { IconChevronLeft } from 'mineral-ui-icons';
 import { createStyledComponent } from '../styles';
 import { createThemedComponent } from '../themes';
 import Button from '../Button';
+import EventListener from '../EventListener';
+// import Flex, { FlexItem } from '../Flex';
+import { FormField } from '../Form';
+import TextInput from '../TextInput';
 
 type Props = {
   /** TODO */
-  'aria-label': string,
+  'aria-label'?: string,
   /** TODO */
-  currentPage?: number,
+  defaultPage?: number,
   /** TODO */
   pageSize?: number,
+  /** TODO */
+  pageJumper?: boolean,
   /** TODO */
   visibleRange?: number,
   /** TODO */
@@ -82,13 +88,10 @@ const PageButton = createThemedComponent(Button, {
   Button_paddingHorizontal: 0
 });
 
-// const createPageRange = () => {
-//
-// }
-
 const pages = (currentPage, handleClick, { totalPages, visibleRange }) => {
-  // const displayPages = totalPages > visibleRange ? [totalPages[currentPage]] : totalPages
-  const pagesBufferMiddle = Math.ceil(visibleRange / 2);
+  const pagesBufferMiddle = Math.ceil(
+    (visibleRange || Pagination.defaultProps.visibleRange) / 2
+  );
   const pagesBuffer =
     currentPage === 0 || currentPage === totalPages - 1
       ? pagesBufferMiddle + 1
@@ -134,29 +137,59 @@ const pages = (currentPage, handleClick, { totalPages, visibleRange }) => {
     .filter((page) => !!page);
 };
 
+const createPageJumper = (handleFormFieldKeydown) => (
+  // <FlexItem display="inline-flex">
+  <Fragment>
+    <EventListener
+      listeners={[
+        {
+          target: 'input',
+          event: 'keydown',
+          handler: handleFormFieldKeydown,
+          options: true
+        }
+      ]}
+    />
+    <FormField
+      label="Jump to page"
+      hideLabel
+      input={TextInput}
+      caption="Jump to page"
+      placeholder="Page #"
+    />
+  </Fragment>
+  // </FlexItem>
+);
+
 /**
  * TODO
  */
 export default class Pagination extends Component<Props, State> {
   static displayName = 'Pagination';
   static defaultProps = {
-    currentPage: 0,
+    'aria-label': 'Pagination',
+    defaultPage: 0,
     pageSize: 10,
     visibleRange: 3
   };
 
   state = {
-    currentPage: this.props.currentPage || Pagination.defaultProps.currentPage
+    currentPage:
+      (this.props.defaultPage && this.props.defaultPage - 1) ||
+      Pagination.defaultProps.defaultPage
   };
 
   render() {
-    const { totalPages, ...restProps } = this.props;
+    const { pageJumper, totalPages, ...restProps } = this.props;
     const rootProps = {
       ...restProps
     };
 
     return (
       <Root {...rootProps}>
+        {/* <Flex> */}
+        {pageJumper ? createPageJumper(this.handleFormFieldKeydown) : null}
+        {/* <FlexItem> */}
         {incrementButton(
           this.state.currentPage,
           'previous',
@@ -170,22 +203,26 @@ export default class Pagination extends Component<Props, State> {
           this.handleIncrement,
           totalPages
         )}
+        {/* </FlexItem> */}
+        {/* </Flex> */}
       </Root>
     );
   }
 
-  handleClick = (index) => {
+  handleClick = (index: number) => {
     this.setState({ currentPage: index });
   };
-  handleIncrement = (incrementForward) => {
-    if (incrementForward) {
-      this.setState((prevState) => ({
-        currentPage: prevState.currentPage + 1
-      }));
-    } else {
-      this.setState((prevState) => ({
-        currentPage: prevState.currentPage - 1
-      }));
+  handleIncrement = (incrementForward: boolean) =>
+    this.setState((prevState) => ({
+      currentPage: incrementForward
+        ? prevState.currentPage + 1
+        : prevState.currentPage - 1
+    }));
+
+  handleFormFieldKeydown = (event: SyntheticInputEvent<>) => {
+    const value = parseInt(event.target.value);
+    if (event.key === 'Enter' && 1 < value && value < this.props.totalPages) {
+      this.setState({ currentPage: value - 1 });
     }
   };
 }
